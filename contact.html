@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | Abdul Hadi</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+</head>
+<body>
+    <header class="header"></header>
+    <main>
+        <section class="contact">
+            <div class="container">
+                <h1 class="section-title reveal">Get In <span class="gradient-text">Touch</span></h1>
+                
+                <div class="contact-container reveal" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; margin-top:3rem;">
+                    
+                    <div class="contact-info">
+                        <div class="glass-card">
+                            <h3 style="margin-bottom:1.5rem;">Contact Info</h3>
+                            
+                            <div style="display:flex; gap:1rem; margin-bottom:1.5rem; align-items:center;">
+                                <div style="width:40px; height:40px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);"><i class="fas fa-envelope"></i></div>
+                                <div>
+                                    <small style="color:var(--text-muted);">Email</small>
+                                    <p>abdul@abdulhadi.com.np</p>
+                                </div>
+                            </div>
+                            
+                            <div style="display:flex; gap:1rem; margin-bottom:1.5rem; align-items:center;">
+                                <div style="width:40px; height:40px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);"><i class="fab fa-linkedin"></i></div>
+                                <div>
+                                    <small style="color:var(--text-muted);">LinkedIn</small>
+                                    <p>abdulhadi-cyberai</p>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; gap:1rem; align-items:center;">
+                                <div style="width:40px; height:40px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);"><i class="fas fa-map-marker-alt"></i></div>
+                                <div>
+                                    <small style="color:var(--text-muted);">Location</small>
+                                    <p>Kathmandu, Nepal</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-form glass-card">
+                        <div id="loginMessage" style="text-align:center; padding:2rem; display:none;">
+                            <i class="fas fa-lock" style="font-size:2rem; color:var(--text-muted); margin-bottom:1rem;"></i>
+                            <p>Please <a href="auth.html" style="color:var(--primary);">Sign In</a> to send a message.</p>
+                        </div>
+
+                        <form id="contactForm" action="https://formspree.io/f/xanpjrvg" method="POST">
+                            <h3 style="margin-bottom:1.5rem;">Send Message</h3>
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" name="name" id="contactName" readonly style="cursor: not-allowed; opacity: 0.7;">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" id="contactEmail" readonly style="cursor: not-allowed; opacity: 0.7;">
+                            </div>
+                            <div class="form-group">
+                                <label>Message</label>
+                                <textarea name="message" id="contactMessage" rows="5" placeholder="How can I help you?" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;">Send Now</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="footer"></footer>
+    <script src="script.js"></script>
+    <script>
+        // Inline script for contact logic to keep specific constraints
+        document.addEventListener("DOMContentLoaded", () => {
+            const email = localStorage.getItem("site_user_email");
+            const form = document.getElementById("contactForm");
+            const loginMsg = document.getElementById("loginMessage");
+            const emailInput = document.getElementById("contactEmail");
+            const nameInput = document.getElementById("contactName");
+
+            // Create Limit Container
+            const limitContainer = document.createElement("div");
+            limitContainer.id = "limitContainer";
+            limitContainer.className = "glass-card"; // Style match
+            limitContainer.style.textAlign = "center";
+            limitContainer.style.display = "none";
+            limitContainer.style.color = "#ff4444";
+            form.parentElement.appendChild(limitContainer);
+
+            function formatTime(ms) {
+                const totalSeconds = Math.floor(ms / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                return `${hours.toString().padStart(2,"0")}:${minutes.toString().padStart(2,"0")}:${seconds.toString().padStart(2,"0")}`;
+            }
+
+            function startCountdown(remainingMs, lastSentKey) {
+                form.style.display = "none";
+                limitContainer.style.display = "block";
+                
+                const update = (ms) => {
+                    limitContainer.innerHTML = `
+                        <i class="fas fa-hourglass-half" style="font-size:2rem; margin-bottom:10px;"></i>
+                        <p>Message limit reached.</p>
+                        <p style="font-size:1.5rem; font-weight:bold; margin:10px 0; color:var(--text-main);">${formatTime(ms)}</p>
+                        <p style="font-size:0.9rem;">Please wait before sending another.</p>
+                    `;
+                };
+                update(remainingMs);
+
+                const interval = setInterval(() => {
+                    const lastSentTime = parseInt(localStorage.getItem(lastSentKey));
+                    const now = Date.now();
+                    const remaining = 86400000 - (now - lastSentTime);
+                    if (remaining <= 0) {
+                        clearInterval(interval);
+                        localStorage.removeItem(lastSentKey);
+                        limitContainer.style.display = "none";
+                        form.style.display = "block";
+                        return;
+                    }
+                    update(remaining);
+                }, 1000);
+            }
+
+            if (email) {
+                form.style.display = "block";
+                loginMsg.style.display = "none";
+                emailInput.value = email;
+                // Fetch name from session if possible, else let user edit
+                nameInput.removeAttribute("readonly");
+                nameInput.style.opacity = "1";
+                nameInput.style.cursor = "text";
+
+                const lastSentKey = `lastContactTime_${email}`;
+                const lastSentTime = localStorage.getItem(lastSentKey);
+                const now = Date.now();
+
+                if (lastSentTime && now - parseInt(lastSentTime) < 86400000) {
+                    startCountdown(86400000 - (now - parseInt(lastSentTime)), lastSentKey);
+                }
+
+                form.addEventListener("submit", (e) => {
+                    const last = localStorage.getItem(lastSentKey);
+                    if (last && Date.now() - parseInt(last) < 86400000) {
+                        e.preventDefault();
+                        return;
+                    }
+                    localStorage.setItem(lastSentKey, Date.now());
+                });
+            } else {
+                form.style.display = "none";
+                loginMsg.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
